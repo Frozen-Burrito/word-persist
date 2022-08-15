@@ -10,6 +10,25 @@ void main() {
     return Category.draft();
   }
 
+  group('Category functional tests', () {
+    test('Category.numberOfWords returns the number of words in the category.', () {
+      // Arrange
+      const int expectedWordCount = 3;
+      final category = Category(
+        id: 0,
+        name: 'test category',
+        confidenceLevel: 1,
+        words: List.generate(expectedWordCount, (index) => Word.draft()),
+      );
+
+      // Act
+      final int wordCount = category.numberOfWords;
+
+      // Assert
+      expect(wordCount, expectedWordCount);
+    });
+  });
+
   group('Category entity tests', () {
     test('Category implements "Entity"', () {      
       // Arrange 
@@ -24,15 +43,15 @@ void main() {
       final Category expected = Category(
         id: 1, 
         name: 'test category', 
-        words: [], 
+        words: <Word>[], 
         confidenceLevel: 4
       );
 
       final validCategoryAsMap = <String, Object?>{
         'id': 1,
         'name': 'test category',
-        'words': [],
-        'confidenceLevel': 4,
+        'words': <Word>[],
+        'confidence_lvl': 4,
       };
 
       // Act
@@ -62,17 +81,19 @@ void main() {
       // Arrange
       final category = createCategory();
 
+      final expectedFields = category.fields.values.map((f) => f.name);
+
       // Act
       final map = category.toMap();
 
       // Assert
-      expect(map.keys, containsAllInOrder(category.fields.keys));
+      expect(map.keys, containsAllInOrder(expectedFields));
     });
 
-    test('Category.fields returns a map with 5 entries', () {
+    test('Category.fields returns a map with 4 entries', () {
       // Arrange
       final category = createCategory();
-      const int expected = 5;
+      const int expected = 4;
 
       // Act
       final int fieldCount = category.fields.length;
@@ -213,6 +234,101 @@ void main() {
 
       // Assert
       expect(isCategoryValid, isTrue);
+    });
+
+    test('Category.validateName(name) returns Category.validationNameEmptyMsg when name is an empty string', () {
+      // Arrange
+      const String emptyName = '';
+      const String expected = Category.validationNameEmptyMsg;
+
+      // Act
+      final nameError = Category.validateName(emptyName);
+
+      // Assert
+      expect(nameError, expected);
+    });
+
+    test('Category.validateName(name) returns null when name is a valid category name', () {
+      // Arrange
+      const String acceptableName = 'category name';
+
+      // Act
+      final nameError = Category.validateName(acceptableName);
+
+      // Assert
+      expect(nameError, isNull);
+    });
+
+    test('Category.validateWords(words) returns Category.validationNotEnoughWords when words is an empty list', () {
+      // Arrange
+      const List<Word> emptyWordList = [];
+      const expectedError = Category.validationNotEnoughWords; 
+
+      // Act
+      final wordListError = Category.validateWords(emptyWordList);
+
+      // Assert
+      expect(wordListError, expectedError);
+    });
+
+    test('Category.validateWords(words) returns Category.validationTooManyWords when words has more than Category.maxWordCount', () {
+      // Arrange
+      final word = Word.draft();
+      final fullWordList = List.generate(Category.maxWordCount + 1, (_) => word);
+      const expectedError = Category.validationTooManyWords; 
+
+      // Act
+      final wordListError = Category.validateWords(fullWordList);
+
+      // Assert
+      expect(wordListError, expectedError);
+    });
+
+    test('Category.validateWords(words) returns null when words is a word list with a length within the accepted range', () {
+      // Arrange
+      final word = Word.draft();
+      final wordList = List.generate(3, (_) => word);
+
+      // Act
+      final wordListError = Category.validateWords(wordList);
+
+      // Assert
+      expect(wordListError, isNull);
+    });
+
+    test('Category.validateConfidenceLvl(lvl) returns Category.validationConfLvlNegative when lvl is negative', () {
+      // Arrange
+      const int incorrectConfidenceLvl = -1;
+      const expectedError = Category.validationConfLvlNegative;
+
+      // Act
+      final confidenceLvlError = Category.validateConfidenceLvl(incorrectConfidenceLvl);
+
+      // Assert
+      expect(confidenceLvlError, expectedError);
+    });
+
+    test('Category.validateConfidenceLvl(lvl) returns Category.validationConfLvlExceedsRange when lvl > Category.maxConfidenceLeve ', () {
+      // Arrange
+      const int incorrectConfidenceLvl = Category.maxConfidenceLevel + 1;
+      const expectedError = Category.validationConfLvlExceedsRange;
+
+      // Act
+      final confidenceLvlError = Category.validateConfidenceLvl(incorrectConfidenceLvl);
+
+      // Assert
+      expect(confidenceLvlError, expectedError);
+    });
+
+    test('Category.validateConfidenceLvl(lvl) returns null when name lvl is within the expected range', () {
+      // Arrange
+      const int confidenceLevel = 0;
+
+      // Act
+      final confidenceLvlError = Category.validateConfidenceLvl(confidenceLevel);
+
+      // Assert
+      expect(confidenceLvlError, isNull);
     });
   });
 

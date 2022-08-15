@@ -1,7 +1,9 @@
 import 'package:word_persist/src/models/category.dart';
 import 'package:word_persist/src/models/entity.dart';
+import 'package:word_persist/src/models/field.dart';
 import 'package:word_persist/src/models/language.dart';
 import 'package:word_persist/src/models/validatable.dart';
+import 'package:word_persist/src/utils/datetime_extensions.dart';
 
 class Word implements Entity, Validatable
 {
@@ -39,7 +41,7 @@ class Word implements Entity, Validatable
   int correctStreak;
   DateTime latestRevision;
 
-  Category category;
+  Category? category;
   Language language;
 
   final DateTime createdAt;
@@ -54,20 +56,21 @@ class Word implements Entity, Validatable
     20: 30,
   });
 
-  static const Map<String, Type> fieldNames = <String, Type>{
-    'id': int, 
-    'originalWord': String, 
-    'translatedWord': String, 
-    'definition': String, 
-    'revisionCount': int, 
-    'correctStreak': int, 
-    'category': Category, 
-    'language': Language, 
-    'latestRevision': DateTime, 
-    'createdAt': DateTime,
+  static final Map<String, Field> fieldNames = {
+    'id': const Field<int>('id', defaultValue: -1, parser: int.tryParse), 
+    'originalWord': const Field<String>('originalWord', defaultValue: ''), 
+    'translatedWord': const Field<String>('translatedWord', defaultValue: ''), 
+    'definition': const Field<String>('definition', defaultValue: ''), 
+    'revisionCount': const Field<int>('revisionCount', defaultValue: 0, parser: int.tryParse), 
+    'correctStreak': const Field<int>('correctStreak', defaultValue: 0, parser: int.tryParse), 
+    'category': const Field<Category>('category', defaultValue: null), 
+    'language': const Field<Language>('language', defaultValue: Language.notSelected), 
+    'latestRevision': Field<DateTime>('latestRevision', defaultValue: DateTime.now(), parser: DateTimeParsing.fromStringSecondsSinceEpoch), 
+    'createdAt': Field<DateTime>('createdAt', defaultValue: DateTime.now(), parser: DateTimeParsing.fromStringSecondsSinceEpoch),
   };
 
-  Map<String, Type> get fields => fieldNames;
+  @override
+  Map<String, Field> get fields => fieldNames;
 
   void revise() {
     // TODO: implement revise
